@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>roots</title>
+</head>
+<body>
+    <h4>roots</h4>
+    <canvas id="canvasRoots" width="200px" height="150px"></canvas>
+
+    <script>
+        let canvas = document.getElementById('canvasRoots');
+        let ctx = canvas.getContext('2d');
+
+        //ajuste de resolucion y tamaño
+        let dpr = window.devicePixelRatio;
+        console.log('dpr: ' + dpr);
+        let windowMeassures = {width: window.innerWidth, height: window.innerHeight};
+        console.log(windowMeassures);
+
+        canvas.width = windowMeassures.width * dpr;
+        canvas.height = windowMeassures.height * dpr;
+
+        ctx.scale(dpr, dpr);
+
+        canvas.style.width = `${windowMeassures.width}px`;
+        canvas.style.height = `${windowMeassures.height}px`;
+
+        let elements = [];
+        elements.push({text: 'elemento A', asociaciones: ['Asociacion M', 'Asociacion N', 'Asociacion O']});
+        elements.push({text: 'elemento B', asociaciones: ['Asociacion K', 'Asociacion L', 'Asociacion R', 'Asociacion S']});
+        elements.push({text: 'elemento C', asociaciones: ['Asociacion K', 
+                                                            'Asociacion A', 
+                                                            'Asociacion B', 
+                                                            'Asociacion C', 
+                                                            'Asociacion E', 
+                                                            'Asociacion G', 
+                                                            'Asociacion I', 
+                                                            'Asociacion R']});
+        elements.push({text: 'elemento D', asociaciones: ['Asociacion K', 'Asociacion L', 'Asociacion R', 'Asociacion S']});
+        elements.push({text: 'elemento E'});
+        elements.push({text: 'elemento F'});
+
+        drawLeftElements(elements);
+        console.log(elements);
+
+        let asociaciones = [];
+        asociaciones.push({text: 'Asociacion A'});
+        asociaciones.push({text: 'Asociacion B'});
+        asociaciones.push({text: 'Asociacion C'});
+        asociaciones.push({text: 'Asociacion D'});
+        asociaciones.push({text: 'Asociacion E'});
+        asociaciones.push({text: 'Asociacion F'});
+        asociaciones.push({text: 'Asociacion G'});
+        asociaciones.push({text: 'Asociacion H'});
+        asociaciones.push({text: 'Asociacion I'});
+        asociaciones.push({text: 'Asociacion J'});
+        asociaciones.push({text: 'Asociacion K'});
+        asociaciones.push({text: 'Asociacion L'});
+        asociaciones.push({text: 'Asociacion M'});
+        asociaciones.push({text: 'Asociacion N'});
+        asociaciones.push({text: 'Asociacion O'});
+        asociaciones.push({text: 'Asociacion P'});
+        asociaciones.push({text: 'Asociacion Q'});
+        asociaciones.push({text: 'Asociacion R'});
+        asociaciones.push({text: 'Asociacion S'});
+        drawTopElements(asociaciones);
+        console.log(asociaciones);
+
+        let elementCached = '';
+        let currentAnimation = 0;
+        let verticalAnimPool= [];
+
+        function drawLeftElements(elements){
+            let elementWidth = Math.ceil(windowMeassures.width / 5);
+            let elementHeight = 50;
+            let elementStyle = 'rgb(28, 119, 217)';
+            if(elements){
+                let posY = Math.ceil(windowMeassures.height / 5);
+                elements.forEach(element => {
+                    element.x = 0;
+                    element.y = posY;
+                    element.width = elementWidth;
+                    element.height = elementHeight;
+                    ctx.beginPath();
+                    ctx.rect(0, posY, elementWidth, elementHeight);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.rect(0, posY, elementWidth, elementHeight);
+                    ctx.fillStyle = elementStyle;
+                    ctx.fill();
+                    ctx.closePath();
+                    ctx.font = "14px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "rgb(255,255, 255)";
+                    ctx.fillText(element.text, (elementWidth/2), posY + (elementHeight/2));
+                    posY = posY + elementHeight;
+                });
+            }
+        }
+
+        function drawTopElements(elements){
+            let elementHeight = Math.ceil(windowMeassures.height / 5);
+            let elementWidth = Math.ceil((windowMeassures.width - 40) * (4/5) / elements.length);
+            let elementStyle = 'rgb(46, 69, 94)';
+            if(elements){
+                //posicion inicial
+                let posX = Math.ceil(windowMeassures.width / 5);
+                elements.forEach(element => {
+                    element.x = posX;
+                    element.y = 0;
+                    element.width = elementWidth;
+                    element.height = elementHeight;
+                    ctx.beginPath();
+                    ctx.rect(element.x, element.y, elementWidth, elementHeight);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.rect(element.x, element.y, elementWidth, elementHeight);
+                    ctx.fillStyle = elementStyle;
+                    ctx.fill();
+                    ctx.closePath();
+                    ctx.font = "14px Arial";
+                    ctx.textAlign = "center"
+                    ctx.fillStyle = "rgb(255,255,255)";
+                    ctx.rotate(Math.PI * (0.5));
+                    ctx.fillText(element.text, element.height/2, -element.x - (element.width / 2));
+                    ctx.rotate(Math.PI * (-0.5));
+                    posX = posX + element.width;
+                });
+            }
+        }
+
+        // handlers
+
+        canvas.addEventListener('mousemove', mouseOverHandler, false);
+
+        //logica de mouseover
+
+        function mouseOverHandler(e){
+            let rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX;
+            mouseY = e.clientY - rect.top;
+            let elementSelected = findElement(mouseX, mouseY);
+            if(elementSelected && elementSelected != elementCached){
+                if(currentAnimation != 0){
+                    window.cancelAnimationFrame(currentAnimation);
+                }
+                verticalAnimPool.forEach(animation =>{
+                    window.cancelAnimationFrame(animation);
+                });
+                verticalAnimPool = [];
+                ctx.clearRect(Math.ceil(windowMeassures.width / 5), Math.ceil(windowMeassures.height / 5), canvas.width, canvas.height);
+                elementCached = elementSelected;
+                console.log(elementSelected);
+                let forks = getForks(elementSelected.asociaciones);
+                console.log(forks);
+                let fps = 1000;
+                drawLine(elementSelected.x + elementSelected.width +1, elementSelected.y + (elementSelected.height/2) -5, 10, windowMeassures.width -20, forks, fps, performance.now);
+            }
+            //console.log('mouse: (' + mouseX + ', ' + mouseY + ')');
+        }
+
+        function findElement(x, y){
+            currentElement = '';
+            elements.forEach(element => {
+                if(x > element.x && x < (element.x + element.width) && y > element.y && y < (element.y + element.height)){
+                    currentElement = element;
+                    return;
+                }
+            });
+            return currentElement;
+        }
+
+        function getForks(elemAssociations){
+            let forks = [];
+            if(elemAssociations){
+                //optimizar a lineal
+                elemAssociations.forEach(elementAssociation => {
+                    asociaciones.forEach(asociacion => {
+                        if(elementAssociation == asociacion.text){
+                            forks.push({initX: asociacion.x, endX: asociacion.x + asociacion.width, drawingPoint: asociacion.x + (asociacion.width / 2), isDrawn: 0 });
+                            return;
+                        }
+                    });
+                });
+            }
+            
+            return forks;
+        }
+
+        function drawLine(x,y, step, maxPosX, forks, fps, timestamp){
+            //let radius = 10;
+            let idlePeriod = 1000/fps;
+            let currentTime = performance.now();
+            let elapsedTime = currentTime - timestamp;
+            if(x + step < maxPosX + step){
+                if(elapsedTime >= idlePeriod){
+                    ctx.beginPath();
+                    ctx.fillStyle = "rgb(146, 232, 189)";
+                    ctx.rect( x,y,step, 10);
+                    //ctx.arc( x + step,y,radius,0,Math.PI*2,false);
+                    ctx.fill();
+                    ctx.closePath();
+                    currentAnimation = requestAnimationFrame(() =>{
+                        drawLine(x+step,y,step+5,maxPosX, forks, fps, currentTime);
+                    });
+                }else{
+                    currentAnimation = requestAnimationFrame(() =>{
+                        drawLine(x,y,step,maxPosX, forks, fps, currentTime);
+                    });
+                }
+            }
+
+            //valida forks
+            if(forks){
+                forks.forEach(fork =>{
+                    if((x+step) > fork.initX && fork.isDrawn == 0){
+                        fork.isDrawn = 1;
+                        drawFork(fork.drawingPoint, y);
+                        return;
+                    }
+                })
+            }
+        }
+
+        function drawFork(x, y, step){
+            if(!step){
+                step = 2;
+            }
+            let forkWidth = 10;
+            if(y >= Math.ceil(windowMeassures.height / 5)){
+                ctx.beginPath();
+                ctx.fillStyle = "rgb(146, 232, 189)";
+                ctx.rect(x - (forkWidth/2),y, forkWidth, step);
+                ctx.fill();
+                ctx.closePath();
+                let verticalAnimation = requestAnimationFrame(()=>{
+                    drawFork(x, y-step, step+1);
+                });
+                verticalAnimPool.push(verticalAnimation);
+            }
+        }
+    </script>
+</body>
+</html>
