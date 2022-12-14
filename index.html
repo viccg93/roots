@@ -73,6 +73,8 @@
         let currentAnimation = 0;
         let verticalAnimPool= [];
 
+        let interactivePoints = [];
+
         function drawLeftElements(elements){
             let elementWidth = Math.ceil(windowMeassures.width / 5);
             let elementHeight = 50;
@@ -154,6 +156,7 @@
                     window.cancelAnimationFrame(animation);
                 });
                 verticalAnimPool = [];
+                interactivePoints = [];
                 ctx.clearRect(Math.ceil(windowMeassures.width / 5), Math.ceil(windowMeassures.height / 5), canvas.width, canvas.height);
                 elementCached = elementSelected;
                 console.log(elementSelected);
@@ -200,12 +203,14 @@
             let elapsedTime = currentTime - timestamp;
             if(x + step < maxPosX + step){
                 if(elapsedTime >= idlePeriod){
+                    ctx.globalCompositeOperation = "destination-over";
                     ctx.beginPath();
                     ctx.fillStyle = "rgb(146, 232, 189)";
                     ctx.rect( x,y,step, 10);
                     //ctx.arc( x + step,y,radius,0,Math.PI*2,false);
                     ctx.fill();
                     ctx.closePath();
+                    ctx.globalCompositeOperation = "source-over";
                     currentAnimation = requestAnimationFrame(() =>{
                         drawLine(x+step,y,step+5,maxPosX, forks, fps, currentTime);
                     });
@@ -222,6 +227,7 @@
                     if((x+step) > fork.initX && fork.isDrawn == 0){
                         fork.isDrawn = 1;
                         drawFork(fork.drawingPoint, y);
+                        drawPoint(fork.drawingPoint, y, 10);
                         return;
                     }
                 })
@@ -234,16 +240,28 @@
             }
             let forkWidth = 10;
             if(y >= Math.ceil(windowMeassures.height / 5)){
+                ctx.globalCompositeOperation = "destination-over";
                 ctx.beginPath();
                 ctx.fillStyle = "rgb(146, 232, 189)";
                 ctx.rect(x - (forkWidth/2),y, forkWidth, step);
                 ctx.fill();
                 ctx.closePath();
+                ctx.globalCompositeOperation = "source-over";
                 let verticalAnimation = requestAnimationFrame(()=>{
                     drawFork(x, y-step, step+1);
                 });
                 verticalAnimPool.push(verticalAnimation);
             }
+        }
+
+        function drawPoint(x, y, radius){
+            let interactivePoint = {x: x, y: y, radius: radius};
+            interactivePoints.push(interactivePoint);
+            ctx.beginPath();
+            ctx.fillStyle = "rgb(46, 69, 94)";
+            ctx.arc(x,y,radius,0,Math.PI*2,false);
+            ctx.fill();
+            ctx.closePath();
         }
     </script>
 </body>
